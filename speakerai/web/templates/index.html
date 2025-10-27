@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>SpeakerAI - Toplantı Analizi</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="hero">
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>SpeakerAI</h1>
+            <p>Toplantı kayıtlarını konuşma dökümüne çevirin, konuşmacıları tanıyın ve psikometrik analizler çıkarın.</p>
+            <form class="upload-form" action="/analyze" method="post" enctype="multipart/form-data">
+                <label class="upload-label">
+                    MP3 Dosyası Yükle
+                    <input type="file" name="file" accept="audio/mpeg" required>
+                </label>
+                <label class="team-label">
+                    Toplantı Ekibi (virgülle ayrılmış)
+                    <input type="text" name="team_members" placeholder="Ör: Ayşe Yılmaz, John Doe">
+                </label>
+                <button type="submit">Analiz Et</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
