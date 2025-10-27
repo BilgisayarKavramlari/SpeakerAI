@@ -1,33 +1,33 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SpeakerAI - Sonuçlar</title>
+    <title>SpeakerAI - Results</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Analiz Sonuçları</h1>
-            <a class="button" href="/">Yeni Analiz</a>
+            <h1>Analysis Results</h1>
+            <a class="button" href="/">New Analysis</a>
         </header>
 
         <section class="downloads">
-            <h2>Çıktılar</h2>
+            <h2>Outputs</h2>
             <div class="download-links">
-                <a class="button" href="/download/transcript?path={{ meeting.transcript_path }}" target="_blank">Konuşma Dökümü</a>
-                <a class="button" href="/download/report?path={{ meeting.report_path }}" target="_blank">Konuşmacı Raporu</a>
+                <a class="button" href="/download/transcript?path={{ meeting.transcript_path }}" target="_blank">Transcript</a>
+                <a class="button" href="/download/report?path={{ meeting.report_path }}" target="_blank">Speaker Report</a>
             </div>
         </section>
 
         <section>
-            <h2>Konuşmacı Tespitleri</h2>
+            <h2>Speaker Findings</h2>
             {% for profile in meeting.profiles %}
             <div class="profile-card">
                 <h3>{{ profile.speaker_label }} {% if profile.matched_speaker_name %}- {{ profile.matched_speaker_name }}{% endif %}</h3>
                 <div class="profile-grid">
                     <div>
-                        <h4>İstatistikler</h4>
+                        <h4>Statistics</h4>
                         <ul>
                             {% for key, value in profile.stats.items() %}
                             <li><strong>{{ key }}:</strong> {{ value }}</li>
@@ -35,7 +35,7 @@
                         </ul>
                     </div>
                     <div>
-                        <h4>Ses Özellikleri</h4>
+                        <h4>Voice Features</h4>
                         <ul>
                             {% for key, value in profile.features.items() %}
                             <li><strong>{{ key }}:</strong> {{ '%.3f'|format(value) }}</li>
@@ -43,7 +43,7 @@
                         </ul>
                     </div>
                     <div>
-                        <h4>Psikometrik Analiz</h4>
+                        <h4>Psychometric Analysis</h4>
                         <ul>
                             {% for key, value in profile.psychometrics.items() %}
                             <li><strong>{{ key }}:</strong> {{ '%.3f'|format(value) }}</li>
@@ -57,39 +57,39 @@
                     <form method="post" action="/confirm">
                         <input type="hidden" name="speaker_label" value="{{ profile.speaker_label }}">
                         <input type="hidden" name="speaker_id" value="{{ profile.matched_speaker_id }}">
-                        <p>{{ profile.matched_speaker_name }} ile eşleşti. Bu eşleşmeyi doğrulamak ister misiniz?</p>
-                        <button type="submit" name="confirm" value="yes">Evet, doğrula</button>
-                        <button type="submit" name="confirm" value="no">Hayır</button>
+                        <p>Matched with {{ profile.matched_speaker_name }}. Would you like to confirm this match?</p>
+                        <button type="submit" name="confirm" value="yes">Confirm</button>
+                        <button type="submit" name="confirm" value="no">Reject</button>
                     </form>
                     {% else %}
                     <form method="post" action="/register">
                         <input type="hidden" name="speaker_label" value="{{ profile.speaker_label }}">
                         <input type="hidden" name="transcript_path" value="{{ meeting.transcript_path }}">
                         <input type="hidden" name="report_path" value="{{ meeting.report_path }}">
-                        <label>Bu konuşmacının adı nedir?
-                            <input type="text" name="speaker_name" required placeholder="İsim girin">
+                        <label>What is this speaker's name?
+                            <input type="text" name="speaker_name" required placeholder="Enter name">
                         </label>
-                        <button type="submit">Kaydet</button>
+                        <button type="submit">Save</button>
                     </form>
                     {% endif %}
                 </div>
 
                 {% if profile.inferred_names %}
-                <p class="hint">Metinden çıkarılan olası isimler: {{ profile.inferred_names | join(', ') }}</p>
+                <p class="hint">Possible names derived from the transcript: {{ profile.inferred_names | join(', ') }}</p>
                 {% endif %}
             </div>
             {% endfor %}
         </section>
 
         <section>
-            <h2>Konuşma Dökümü</h2>
+            <h2>Transcript</h2>
             <table class="transcript-table">
                 <thead>
                     <tr>
-                        <th>Konuşmacı</th>
-                        <th>Başlangıç (sn)</th>
-                        <th>Bitiş (sn)</th>
-                        <th>Metin</th>
+                        <th>Speaker</th>
+                        <th>Start (s)</th>
+                        <th>End (s)</th>
+                        <th>Text</th>
                     </tr>
                 </thead>
                 <tbody>

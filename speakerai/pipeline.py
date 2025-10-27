@@ -130,7 +130,7 @@ class SpeakerPipeline:
         return float(dot / (norm_a * norm_b))
 
     def _infer_names(self, turns: Iterable[SpeakerTurn]) -> List[str]:
-        keywords = ["i am", "benim adım", "my name is", "this is"]
+        keywords = ["i am", "my name is", "this is"]
         inferred = []
         for turn in turns:
             lower = turn.text.lower()

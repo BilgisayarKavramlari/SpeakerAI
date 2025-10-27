@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Sequence
@@ -16,6 +18,26 @@ from ..models import SpeakerTurn
 from .diarization import DiarizationSegment, assign_speakers
 
 LOGGER = logging.getLogger(__name__)
+
+
+def ensure_ffmpeg() -> Path:
+    """Ensure an FFmpeg binary is available and return its path."""
+
+    existing = shutil.which("ffmpeg")
+    if existing:
+        return Path(existing)
+
+    try:  # pragma: no cover - optional dependency
+        from imageio_ffmpeg import get_ffmpeg_exe  # type: ignore
+    except Exception as exc:  # pragma: no cover - graceful error handling
+        raise RuntimeError(
+            "FFmpeg is required but was not found. Install the system package or add "
+            "`imageio-ffmpeg` to your environment."
+        ) from exc
+
+    ffmpeg_path = Path(get_ffmpeg_exe())
+    os.environ["PATH"] = f"{ffmpeg_path.parent}{os.pathsep}{os.environ.get('PATH', '')}"
+    return ffmpeg_path
 
 
 @dataclass
@@ -39,6 +61,7 @@ class TranscriptionService:
             raise RuntimeError(
                 "The 'whisper' package is required for transcription. Install it via `pip install openai-whisper`."
             )
+        ensure_ffmpeg()
         if self._model is None:
             LOGGER.info("Loading Whisper model '%s'", self.model_name)
             self._model = whisper.load_model(self.model_name)

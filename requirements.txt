@@ -9,3 +9,4 @@ scipy>=1.10
 vaderSentiment>=3.3
 openai-whisper>=20231117
 pytest>=7.4
+imageio-ffmpeg>=0.4

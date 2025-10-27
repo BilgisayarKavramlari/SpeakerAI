@@ -1,48 +1,75 @@
 # SpeakerAI
 
-SpeakerAI, toplantı kayıtlarını metne dönüştürerek konuşmacıları tanıyan, ses karakteristiklerini çıkaran ve psikometrik analizler sunan bir çözüm sunar. Sistem, mp3 formatındaki toplantı kayıtlarını işler, konuşmacılara tutarlı kimlikler atar ve konuşmacı hakkında toplanabilen tüm bilgileri raporlar. Ayrıca ses imzası niteliğindeki istatistiksel değerleri toplayarak gelecekteki toplantılarda konuşmacıların eşleştirilmesini kolaylaştırır.
+SpeakerAI converts meeting recordings into searchable transcripts, enriches each speaker with reusable voice profiles, and captures psychometric insights that help identify returning participants across sessions.
 
-## Özellikler
-- Whisper tabanlı (veya isteğe bağlı hafif yedek) metne döküm.
-- Enerji temelli diarizasyon ile konuşmacı tespiti.
-- Ses karakteristiği çıkartımı (pitch, enerji, konuşma hızı, spektral centroid).
-- Psikometrik analiz ve duygu kestirimi.
-- SQLite veri tabanı sayesinde konuşmacı profilinin saklanması ve yeniden eşleştirilmesi.
-- FastAPI tabanlı web arayüzü (7883 portu) ve CLI.
-- Transkript ve konuşmacı raporu çıktıları.
+## Features
+- Whisper-based speech-to-text transcription with diarization-driven speaker labeling.
+- Acoustic feature extraction (pitch, speaking rate, energy, spectral statistics) for long-term voice signatures.
+- Psychometric scoring of each speaker turn to highlight emotional tone.
+- SQLite persistence layer for reusing speaker profiles and confirming future matches.
+- FastAPI web application (served on port 7883) and CLI workflow for batch processing.
+- Dual output artifacts: a detailed transcript and a speaker intelligence report.
 
-## Kurulum
+## Automated Environment Setup
+Run the bootstrap script once to create the virtual environment, install dependencies, and download an FFmpeg binary when the host system does not already provide one:
+
+```bash
+./scripts/bootstrap.sh
+```
+
+After the script succeeds, activate the environment for subsequent commands:
+
+```bash
+source .venv/bin/activate
+```
+
+### Manual Setup (Optional)
+If you prefer manual steps, ensure Python 3.10+ is available and run:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -U pip
-pip install -r requirements.txt
+python -m pip install --upgrade pip wheel
+python -m pip install -r requirements.txt
 ```
 
-> **Not:** `openai-whisper`, `librosa` ve `vaderSentiment` gibi bağımlılıklar ses işleme ve psikometrik analiz için gereklidir. GPU destekli kullanımlarda `torch` kurulumu için [PyTorch](https://pytorch.org/get-started/locally/) yönergelerini izleyin.
+The project depends on FFmpeg for audio decoding. Installing `imageio-ffmpeg` (already listed in `requirements.txt`) automatically downloads a compatible binary when needed. You can also install the system package (e.g., `sudo apt-get install ffmpeg`).
 
-## CLI Kullanımı
-```bash
-python -m speakerai.cli /path/to/meeting.mp3 --team "Ayşe Yılmaz" "John Doe"
-```
-Komut çalıştırıldığında transkript `data/outputs/transcripts/` klasörüne, konuşmacı raporu ise `data/outputs/reports/` klasörüne kaydedilir.
+## Running the Web App
+Start the FastAPI server on port 7883:
 
-## Web Uygulaması
-Sunucuyu başlatmak için:
 ```bash
 uvicorn speakerai.web.app:app --host 0.0.0.0 --port 7883 --reload
 ```
-Ardından tarayıcıdan `http://localhost:7883` adresine giderek mp3 dosyanızı yükleyin. Sistem, konuşma dökümü ile konuşmacı raporlarını üretir ve önceki toplantılardan öğrendiği konuşmacılarla eşleştirme önerileri sunar.
 
-## Veri Tabanı
-Konuşmacılar `data/speaker_profiles.sqlite3` içerisinde saklanır. Web arayüzü veya CLI ile yeni bir konuşmacı kaydı yapıldığında bu veri tabanı güncellenir.
+Open `http://localhost:7883` in a browser, upload an MP3 recording, and follow the prompts to review transcripts, review or confirm speaker matches, and export both the transcript and speaker report artifacts.
 
-## Testler
+## CLI Usage
+Process a meeting from the command line:
+
+```bash
+python -m speakerai.cli /path/to/meeting.mp3 --team "Alice Example" "Bob Example"
+```
+
+Outputs are stored under `data/outputs/transcripts/` and `data/outputs/reports/`. The CLI prompts for speaker confirmation when prior matches are available and updates the SQLite database (`data/speaker_profiles.sqlite3`).
+
+## Testing
+Run the test suite with:
+
 ```bash
 pytest
 ```
 
-## Geliştirme Notları
-- Transkripsiyon için Whisper modeli otomatik olarak yüklenir; eğer model bulunamazsa sistem sahte transkript segmentleri oluşturarak geliştirme/test aşamasında akışı bozmadan ilerlemenizi sağlar.
-- Diarizasyon ve özellik çıkarımı, `librosa` tabanlı hafif yaklaşımlarla gerçekleştirilir. İhtiyaca göre daha ileri diarizasyon modelleri entegre edilebilir.
-- Psikometrik analizde `vaderSentiment` kullanılır; yoksa anahtar kelime tabanlı heuristik devreye girer.
+## Project Structure
+- `speakerai/audio/`: Transcription, diarization, acoustic features, and psychometric scoring modules.
+- `speakerai/pipeline.py`: Orchestrates the end-to-end meeting analysis.
+- `speakerai/web/`: FastAPI app, templates, and static assets for the web experience.
+- `speakerai/database.py`: SQLite models and persistence helpers.
+- `data/`: Default location for outputs and the speaker profile database.
+- `tests/`: Automated tests covering the pipeline.
+
+## Troubleshooting
+- **Whisper model downloads**: The first run downloads the selected Whisper model (default `small`). Subsequent executions reuse the cached model.
+- **GPU acceleration**: Install a CUDA-enabled PyTorch wheel before running the bootstrap script to take advantage of GPU inference.
+- **Missing FFmpeg**: Re-run `./scripts/bootstrap.sh` or install FFmpeg via your OS package manager if audio decoding fails.
+
